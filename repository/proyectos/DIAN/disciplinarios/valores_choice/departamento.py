@@ -40,13 +40,37 @@ VALORES_DEPARTAMENTO= [
 'VICHADA',
 ]
 
-VALORES_REEMPLAZO_DEPARTAMENTO ={
+VALORES_REEMPLAZO_DEPARTAMENTO = {
+    # Reemplazos de Guajira
     "GUAJIRA": "LA GUAJIRA",
+    
+    # Reemplazos de Norte de Santander
     "N.SANTANDER": "NORTE DE SANTANDER",
-    "VALLE": 'VALLE DEL CAUCA',
-    "SAN_ANDRES_Y_PROVIDENCIA":"SAN ANDRES Y PROVIDENCIA",
-    "SAN ANDRES": "SAN ANDRES Y PROVIDENCIA",
     "NORTE SANTANDER": "NORTE DE SANTANDER",
     "NSANTANDER": "NORTE DE SANTANDER",
-    "BOGOTA DC":"BOGOTA"
+    
+    # Reemplazos de Valle del Cauca
+    "VALLE": "VALLE DEL CAUCA",
+    
+    # Reemplazos de San Andrés y Providencia
+    "SAN_ANDRES_Y_PROVIDENCIA": "SAN ANDRES Y PROVIDENCIA",
+    "SAN ANDRES": "SAN ANDRES Y PROVIDENCIA",
+    
+    # Reemplazos de Bogotá D.C.
+    "BOGOTA DC": "BOGOTA",
+    "BOGOTA D.C.": "BOGOTA",
+    "BOGOTÁ D.C.": "BOGOTA",
+    "BOGOTÁ DC": "BOGOTA",
+    "BOGOTÁ D C": "BOGOTA",
+    "BOGOTÁ DISTRITO CAPITAL": "BOGOTA",
+    "DISTRITO CAPITAL": "BOGOTA",
+    "D.C.": "BOGOTA",
+    "DC": "BOGOTA",
+    "BOGOTÁ": "BOGOTA",
+    
+    # Reemplazos de Cundinamarca
+    "CUNDINAMRCA": "CUNDINAMARCA",
+    "CUNDINAMCA": "CUNDINAMARCA",
+    "CUNDINAMRACA": "CUNDINAMARCA",
+    "CUNDINAMARCA": "CUNDINAMARCA",  # Para casos donde ya está correcto
 }

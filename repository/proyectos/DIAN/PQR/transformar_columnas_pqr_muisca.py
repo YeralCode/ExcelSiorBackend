@@ -158,7 +158,7 @@ class CSVProcessor:
                         raise ValueError(f"Columnas esperadas: {len(header)}, obtenidas: {len(row)}")
                     
                     processed_row = []
-                    for col_num, (raw_val, col_name) in enumerate(zip(row, header), start=1):
+                    for col_num, (raw_val, col_name) in enumerate(zip(row, header), start=0):
                         value = self.postprocess_field(raw_val)
                         clean_val = self.clean_value(value)
                         

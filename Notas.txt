@@ -108,3 +108,24 @@ tener un usuario para la base de datos de fallecidos y actas de nacimientos
  2. se pueden tener anomalias verificar que anomalias hay
  4. solo se va hacer pesonas juridicas 
  5. va haber capacitacion via teams 12 de mayo posible 
+
+
+
+se sube el proyecto con 
+uvicorn main:app --reload
+
+para saber el entorno esta activo 
+which python
+
+activarlo el entorno virtual
+source venv/bin/activate
+
+para actualizar la version de node 
+nvm install 22
+
+para mirar el puerto :8000
+sudo lsof -i :8000
+
+matar el proceso 
+sudo kill -9 PID
+

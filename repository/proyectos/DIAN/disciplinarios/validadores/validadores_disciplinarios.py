@@ -2,7 +2,7 @@ import re
 import unicodedata
 from datetime import datetime, time
 from typing import Tuple, Dict, Union
-from valores_choice.direccion_seccional_dian import VALORES_DIRECCION_SECCIONAL, VALORES_REEMPLAZO_DIRECCION_SECCIONAL
+from valores_choice.direccion_seccional import VALORES_DIRECCION_SECCIONAL, VALORES_REEMPLAZO_DIRECCION_SECCIONAL
 from valores_choice.departamento import VALORES_DEPARTAMENTO, VALORES_REEMPLAZO_DEPARTAMENTO
 from valores_choice.ciudad import VALORES_CIUDAD, VALORES_REEMPLAZO_CIUDAD
 

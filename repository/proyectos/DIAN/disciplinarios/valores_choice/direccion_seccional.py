@@ -52,16 +52,18 @@ VALORES_DIRECCION_SECCIONAL = [
     'direccion seccional de aduanas de cucuta',
     'direccion seccional de aduanas de medellin',
     'dirección seccional de aduanas de bogota',
-    # se agregaron de mas
-    # 'subdireccion de gestion de asistencia al cliente',
-    # 'impuestos y aduanas de inirida mitu puerto carreno y san jose del guaviare',
-    # 'subdireccion de gestion tecnica aduanera',
-    # 'subdireccion de gestion de analisis operacional',
-    # 'subdireccion de gestion de fiscalizacion tributaria',
-    # 'subdireccion de gestion de normativa y doctrina',
-    # 'subdireccion de gestion de recaudo y cobranzas',
-    # 'defensor del contribuyente y del usuario aduanero'
-
+    # Nuevas direcciones seccionales agregadas
+    'oficina juridica',
+    'gerencia seguimiento contractual',
+    'gerencia seguimiento contractual, oti, gerencia financiera, gerencia servicio al cliente y gerencia administrativa y oficina juridica',
+    'vicepresidencia de operaciones- gerencia de seguimiento contractual',
+    'gerencia de control a las operaciones ilegales',
+    'gerencia financiera',
+    'vicepresidencia de operaciones',
+    'vicepresidencia de desarrollo organizacional',
+    'vicepresidencia desarrollo comercial',
+    'gerencia fiscalizacion',
+    'oficina de planeacion'
 
 ]
 
@@ -128,4 +130,9 @@ VALORES_REEMPLAZO_DIRECCION_SECCIONAL = {
     'direccion seccional de impuestos y aduanas de bucamaranga': 'direccion seccional de impuestos y aduanas de bucaramanga',
     'direccion seccional de aduanas de maicao':'direccion seccional de impuestos y aduanas de maicao',
     'direccion seccional de grandes contribuyentes': 'direccion seccional de impuestos de grandes contribuyentes',
+    'gerencia de control, a las operaciones ilegales': 'gerencia de control a las operaciones ilegales',
+    'gerencia control a las operaciones ilegales': 'gerencia de control a las operaciones ilegales',
+    'gerencia de cobro/gerencia de control las operaciones ilegales': 'gerencia de control a las operaciones ilegales',
+    'gerencia de operaciones ilegales': 'gerencia de control a las operaciones ilegales',
+    'oficina asesora de planeacion': 'oficina de planeacion',
 }   

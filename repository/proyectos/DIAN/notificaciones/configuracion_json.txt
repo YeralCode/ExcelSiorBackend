@@ -1,0 +1,118 @@
+type_mapping = {
+        "integer": ["PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", "CODIGO_DEPENDENCIA", 
+        "ANO_CALENDARIO","CODIGO_ACTO",  "ANO_ACTO", "CONSECUTIVO_ACTO","PLANILLA_REMISION", "PLANILLA_CORR", "NUMERO_EXPEDIENTE",
+        "TIPO_DOCUMENTO", "PERI_IMPUESTO", "PERI_PERIODO", "PAIS_COD_NUM_PAIS",
+        "MUNI_CODIGO_MUNICI", "PAIS_COD_NUM_PAIS", "PLANILLA_REMI_ARCHIVO", "MUNI_CODIGO_DEPART" ],
+        "float": ["CUANTIA_ACTO"],
+        "date": ["FECHA_ACTO", "FECHA_NOTIFICACION", "FECHA_EJECUTORIA", "FECHA_PLANILLA_REMISION",
+        "FECHA_PLANILLA_CORR", "FECHA_CITACION", "FECHA_PLANILLA_REMI_ARCHIVO"],
+        "nit": ["NIT"],
+        # TINO_CODIGO_NOTIFICACION y REGI_CODIGO_REGIMEN se tratan como strings por defecto
+    }
+
+2024 ene - mar
+type_mapping = {
+        "integer": ["PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", "CODIGO_DEPENDENCIA", 
+        "ANO_CALENDARIO_1","CONSECUTIVO_ACTO","PLANILLA_REMISION", "PLANILLA_CORR", "NUMERO_EXPEDIENTE",
+        "TIPO_DOCUMENTO", "PERI_IMPUESTO", "PERI_PERIODO", "PAIS_COD_NUM_PAIS",
+        "MUNI_CODIGO_MUNICI", "PLANILLA_REMI_ARCHIVO", "MUNI_CODIGO_DEPART" ],
+        "float": ["CUANTIA_ACTO"],
+        "date": ["FECHA_ACTO", "FECHA_PLANILLA_REMISION","FECHA_PLANILLA_CORR","FECHA_NOTIFICACION", "FECHA_EJECUTORIA", 
+        , "FECHA_LEVANTE", "FECHA_PLANILLA_REMI_ARCHIVO"],
+        "nit": ["NIT"],
+        # TINO_CODIGO_NOTIFICACION y REGI_CODIGO_REGIMEN se tratan como strings por defecto
+    }
+    
+Consolidado jun - nov 2022
+type_mapping = {
+        "integer": ["PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", "CODIGO_DEPENDENCIA", "CODIGO_ACTO",
+        "ANO_CALENDARIO","CONSECUTIVO_ACTO","COPL_PLANILLA_REMI", "COPL_PLANILLA_CORR", "NUMERO_EXPEDIENTE",
+        "TIPO_DOCUMENTO", "PERI_IMPUESTO", "PERI_PERIODO", "PAIS_COD_NUM_PAIS",
+        "MUNI_CODIGO_MUNICI", "MUNI_CODIGO_DEPART" ],
+        "float": ["CUANTIA_ACTO"],
+        "date": ["FECHA_ACTO", "FECHA_PLANILLA_REMI","FECHA_PLANILLA_CORR","FECHA_NOTIFICACION", "FECHA_EJECUTORIA", 
+        , "FECHA_LEVANTE"],
+        "nit": ["NIT"],
+        # TINO_CODIGO_NOTIFICACION y REGI_CODIGO_REGIMEN se tratan como strings por defecto
+    }
+    
+    
+  Consolidado 2019 - 2020_ent  
+{
+    "integer": [
+        "PIA", "SECC", "DEP", "AÑO", "COD_ACTO", "CONSECUTIVO", 
+        "PLANILLA_REMI", "PLANILLA_CORR", 
+        "NUMERO_DE_GUIA", "NUMERO_EXPEDIENTE", 
+         "DEPTO", "MUNICIPIO", "PERIODO",
+    ],
+    "float": [
+        "CUANTIA","IMPUESTO",
+    ],
+    
+    # Columnas de tipo date (fechas)
+    "date": [
+        "FECHA_ACTO", "FECHA_PLANILLA_REMI", "FECHA_CITACION", 
+        "FECHA_PLANILLA_CORR", "FECHA_NOTIFICACION", "FECHA_EJECUTORIA",
+        "FECHA_LEVANTE_EJECUTORIA"
+    ],
+    
+    "nit": ["NIT"],
+}
+
+consolidado_notificaciones_2024
+type_mapping = {
+        # Columnas de tipo integer (números enteros)
+        "integer": [
+            "PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", "SECCIONAL", 
+            "CODIGO_DEPENDENCIA", "ANO_CALENDARIO", "CODIGO_ACTO", 
+            "ANO_ACTO", "CONSECUTIVO_ACTO", "PLANILLA_REMISION", 
+            "PLANILLA_CORR", "NUMERO_EXPEDIENTE", "PERI_IMPUESTO",
+            "PERI_PERIODO", "PAIS_COD_NUM_PAIS", "MUNI_CODIGO_DEPART", 
+            "MUNI_CODIGO_MUNICI", "PLANILLA_REMI_ARCHIVO"
+        ],
+        
+        # Columnas de tipo float (números decimales)
+        "float": [
+            "CUANTIA_ACTO"
+        ],
+        
+        # Columnas de tipo date (fechas)
+        "date": [
+            "FECHA_ACTO", "FECHA_PLANILLA_REMISION", "FECHA_CITACION", 
+            "FECHA_PLANILLA_CORR", "FECHA_NOTIFICACION", "FECHA_EJECUTORIA",
+            "FECHA_LEVANTE", "FECHA_PLANILLA_REMI_ARCHIVO"
+        ],
+        
+        # Columnas de tipo NIT
+        "nit": ["NIT"],
+        
+    }
+consolidado_2025_enero_marzo
+type_mapping = {
+        # Columnas de tipo integer (números enteros)
+        "integer": [
+            "PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", 
+            "CODIGO_DEPENDENCIA", "ANO_CALENDARIO", "CODIGO_ACTO", 
+            "ANO_ACTO", "CONSECUTIVO_ACTO", "PLANILLA_REMISION", 
+            "PLANILLA_CORR", "NUMERO_EXPEDIENTE", "PERI_IMPUESTO",
+            "PERI_PERIODO", "PAIS_COD_NUM_PAIS", "MUNI_CODIGO_DEPART", 
+            "MUNI_CODIGO_MUNICI", "PLANILLA_REMI_ARCHIVO"
+        ],
+        
+        # Columnas de tipo float (números decimales)
+        "float": [
+            "CUANTIA_ACTO"
+        ],
+        
+        # Columnas de tipo date (fechas)
+        "date": [
+            "FECHA_ACTO", "FECHA_PLANILLA_REMISION", "FECHA_CITACION", 
+            "FECHA_PLANILLA_CORR", "FECHA_NOTIFICACION", "FECHA_EJECUTORIA",
+            "FECHA_LEVANTE", "FECHA_PLANILLA_REMI_ARCHIVO"
+        ],
+        
+        # Columnas de tipo NIT
+        "nit": ["NIT"],
+        
+    }
+

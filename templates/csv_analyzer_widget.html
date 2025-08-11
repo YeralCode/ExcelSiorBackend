@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Analizador CSV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .widget-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .widget-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .widget-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1001;
+        }
+        .widget-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Widget Button -->
+    <div class="widget-container">
+        <button class="widget-button" onclick="openWidget()" title="Analizar CSV">
+            <i class="fas fa-chart-bar text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Widget Modal -->
+    <div id="widgetModal" class="widget-modal">
+        <div class="widget-content fade-in">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Analizador CSV
+                </h3>
+                <button onclick="closeWidget()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4">
+                <!-- File Upload -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input type="file" id="widgetFile" accept=".csv,.txt" class="hidden" onchange="handleWidgetFileSelect(this)">
+                    <button onclick="document.getElementById('widgetFile').click()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-upload mr-2"></i>
+                        Seleccionar CSV
+                    </button>
+                    <p class="text-sm text-gray-500 mt-2">Arrastra o selecciona un archivo CSV</p>
+                </div>
+
+                <!-- File Info -->
+                <div id="widgetFileInfo" class="hidden bg-gray-50 p-3 rounded">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium" id="widgetFileName"></p>
+                            <p class="text-sm text-gray-500" id="widgetFileSize"></p>
+                        </div>
+                        <button onclick="removeWidgetFile()" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analysis Button -->
+                <button id="widgetAnalyzeBtn" onclick="analyzeWidgetFile()" class="hidden w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+                    <i class="fas fa-play mr-2"></i>
+                    Analizar Archivo
+                </button>
+
+                <!-- Results -->
+                <div id="widgetResults" class="hidden space-y-3">
+                    <div class="bg-blue-50 p-3 rounded">
+                        <h4 class="font-semibold text-blue-800 mb-2">Resumen</h4>
+                        <div id="widgetSummary" class="text-sm"></div>
+                    </div>
+                    
+                    <div class="bg-green-50 p-3 rounded">
+                        <h4 class="font-semibold text-green-800 mb-2">Tipos Detectados</h4>
+                        <div id="widgetTypes" class="text-sm"></div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="downloadWidgetDictionary()" class="flex-1 bg-purple-500 text-white py-2 rounded text-sm hover:bg-purple-600">
+                            <i class="fas fa-download mr-1"></i>
+                            Descargar
+                        </button>
+                        <button onclick="copyWidgetResults()" class="flex-1 bg-blue-500 text-white py-2 rounded text-sm hover:bg-blue-600">
+                            <i class="fas fa-copy mr-1"></i>
+                            Copiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let widgetFile = null;
+        let widgetResults = null;
+
+        function openWidget() {
+            document.getElementById('widgetModal').style.display = 'block';
+        }
+
+        function closeWidget() {
+            document.getElementById('widgetModal').style.display = 'none';
+            resetWidget();
+        }
+
+        function handleWidgetFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                widgetFile = file;
+                document.getElementById('widgetFileName').textContent = file.name;
+                document.getElementById('widgetFileSize').textContent = formatFileSize(file.size);
+                document.getElementById('widgetFileInfo').classList.remove('hidden');
+                document.getElementById('widgetAnalyzeBtn').classList.remove('hidden');
+            }
+        }
+
+        function removeWidgetFile() {
+            widgetFile = null;
+            document.getElementById('widgetFile').value = '';
+            document.getElementById('widgetFileInfo').classList.add('hidden');
+            document.getElementById('widgetAnalyzeBtn').classList.add('hidden');
+            document.getElementById('widgetResults').classList.add('hidden');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function analyzeWidgetFile() {
+            if (!widgetFile) return;
+
+            const formData = new FormData();
+            formData.append('file', widgetFile);
+            formData.append('auto_detect_types', 'true');
+            formData.append('sample_size', '1000');
+
+            try {
+                const response = await fetch('/csv-analyzer/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                widgetResults = await response.json();
+                displayWidgetResults(widgetResults);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al analizar el archivo: ' + error.message);
+            }
+        }
+
+        function displayWidgetResults(results) {
+            // Summary
+            const summary = document.getElementById('widgetSummary');
+            summary.innerHTML = `
+                <div><strong>Filas:</strong> ${results.file_info.total_rows.toLocaleString()}</div>
+                <div><strong>Columnas:</strong> ${results.file_info.total_columns}</div>
+                <div><strong>Codificación:</strong> ${results.file_info.encoding}</div>
+            `;
+
+            // Types
+            const types = document.getElementById('widgetTypes');
+            let typesHtml = '';
+            for (const [type, columns] of Object.entries(results.data_types)) {
+                if (columns.length > 0) {
+                    typesHtml += `<div><strong>${type}:</strong> ${columns.length} columnas</div>`;
+                }
+            }
+            types.innerHTML = typesHtml;
+
+            // Show results
+            document.getElementById('widgetResults').classList.remove('hidden');
+        }
+
+        async function downloadWidgetDictionary() {
+            if (!widgetResults || !widgetFile) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', widgetFile);
+
+                const response = await fetch('/csv-analyzer/generate-type-dictionary', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const dictionary = await response.json();
+                
+                const blob = new Blob([JSON.stringify(dictionary, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `type_dictionary_${widgetFile.name.replace('.csv', '')}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar diccionario: ' + error.message);
+            }
+        }
+
+        function copyWidgetResults() {
+            if (!widgetResults) return;
+
+            const dataToCopy = {
+                analysis: widgetResults,
+                generated_at: new Date().toISOString()
+            };
+
+            navigator.clipboard.writeText(JSON.stringify(dataToCopy, null, 2)).then(() => {
+                alert('Análisis copiado al portapapeles');
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                alert('Error al copiar al portapapeles');
+            });
+        }
+
+        function resetWidget() {
+            widgetFile = null;
+            widgetResults = null;
+            document.getElementById('widgetFile').value = '';
+            document.getElementById('widgetFileInfo').classList.add('hidden');
+            document.getElementById('widgetAnalyzeBtn').classList.add('hidden');
+            document.getElementById('widgetResults').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('widgetModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWidget();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('widgetModal').style.display === 'block') {
+                closeWidget();
+            }
+        });
+    </script>
+</body>
+</html> 

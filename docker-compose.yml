@@ -1,0 +1,177 @@
+version: '3.8'
+
+services:
+  # Servicio principal de la API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: excelsior-api
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=INFO
+      - TEMP_DIR=/tmp/excelsior
+      - MAX_FILE_SIZE=104857600
+    volumes:
+      - ./logs:/app/logs
+      - ./temp:/tmp/excelsior
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - excelsior-network
+
+  # Servicio de desarrollo
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: excelsior-api-dev
+    ports:
+      - "8001:8000"
+    environment:
+      - LOG_LEVEL=DEBUG
+      - TEMP_DIR=/tmp/excelsior
+      - DEBUG=true
+      - RELOAD=true
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./temp:/tmp/excelsior
+    restart: unless-stopped
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+    networks:
+      - excelsior-network
+    profiles:
+      - development
+
+  # Servicio de testing
+  api-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: excelsior-api-test
+    environment:
+      - LOG_LEVEL=DEBUG
+      - TEMP_DIR=/tmp/excelsior
+    volumes:
+      - .:/app
+    command: ["pytest", "tests/", "-v", "--cov=.", "--cov-report=html"]
+    networks:
+      - excelsior-network
+    profiles:
+      - testing
+
+  # Servicio de Redis (para futuras implementaciones de cache)
+  redis:
+    image: redis:7-alpine
+    container_name: excelsior-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - excelsior-network
+    profiles:
+      - cache
+
+  # Servicio de PostgreSQL (para futuras implementaciones de base de datos)
+  postgres:
+    image: postgres:15-alpine
+    container_name: excelsior-postgres
+    environment:
+      POSTGRES_DB: excelsior
+      POSTGRES_USER: excelsior_user
+      POSTGRES_PASSWORD: excelsior_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - excelsior-network
+    profiles:
+      - database
+
+  # Servicio de Nginx (para producción)
+  nginx:
+    image: nginx:alpine
+    container_name: excelsior-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - excelsior-network
+    profiles:
+      - production
+
+  # Servicio de monitoreo (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: excelsior-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - excelsior-network
+    profiles:
+      - monitoring
+
+  # Servicio de visualización (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: excelsior-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - excelsior-network
+    profiles:
+      - monitoring
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  excelsior-network:
+    driver: bridge 
