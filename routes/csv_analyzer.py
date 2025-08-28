@@ -186,7 +186,7 @@ class DataTypeDetector:
         
         return total_valid > 0 and (bool_count / total_valid) > 0.8
 
-def extract_unique_values(column_data: pd.Series, max_values: Optional[int] = 50) -> List[str]:
+def extract_unique_values(column_data: pd.Series, max_values: Optional[int] = None) -> List[str]:
     """
     Extrae valores únicos de una columna.
     
@@ -208,9 +208,12 @@ def extract_unique_values(column_data: pd.Series, max_values: Optional[int] = 50
         # Obtener valores únicos
         unique_values = clean_data.astype(str).str.strip().unique()
         
-        # Ordenar y limitar
-        if max_values is not None:
+        # Ordenar y limitar solo si se especifica un límite
+        if max_values is not None and max_values > 0:
             unique_values = sorted(unique_values)[:max_values]
+        else:
+            # Sin límite - ordenar todos los valores únicos
+            unique_values = sorted(unique_values)
         
         # Convertir a lista de strings
         return [str(value) for value in unique_values]
@@ -224,18 +227,8 @@ async def analyze_csv(
     use_dynamic_types: bool = Form(True),
     extract_choices: bool = Form(True)  # Nuevo parámetro para extraer choices
 ):
-    """
-    Analiza un archivo CSV y detecta tipos de datos automáticamente.
-    
-    Args:
-        file: Archivo CSV a analizar
-        use_dynamic_types: Si usar tipos de datos dinámicos personalizados
-        extract_choices: Si extraer valores únicos de cada columna
-        
-    Returns:
-        Resultado del análisis con tipos detectados
-    """
     try:
+        breakpoint()
         # Crear directorio temporal
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file.filename)
@@ -251,7 +244,6 @@ async def analyze_csv(
         
         logger.info(f"Separador detectado: '{detected_separator}' (confianza: {separator_confidence:.2f})")
         
-        # Leer CSV con pandas usando el separador detectado
         try:
             # Intentar leer con diferentes configuraciones usando el separador detectado
             df = None
@@ -417,19 +409,8 @@ async def analyze_csv(
 async def get_column_choices(
     file: UploadFile = File(...),
     column_name: str = Form(...),
-    max_values: Optional[int] = Form(None)  # Cambiar a opcional, None significa sin límite
+    max_values: Optional[int] = Form(None)
 ):
-    """
-    Extrae los valores únicos de una columna específica.
-    
-    Args:
-        file: Archivo CSV a analizar
-        column_name: Nombre de la columna (puede ser original o normalizado)
-        max_values: Máximo número de valores únicos (None = sin límite)
-        
-    Returns:
-        Lista de valores únicos de la columna
-    """
     try:
         # Crear directorio temporal
         temp_dir = tempfile.mkdtemp()
@@ -508,15 +489,6 @@ async def get_column_choices(
 
 @router.post("/detect-separator")
 async def detect_csv_separator(file: UploadFile = File(...)):
-    """
-    Detecta el separador de un archivo CSV.
-    
-    Args:
-        file: Archivo CSV a analizar
-        
-    Returns:
-        Información sobre el separador detectado
-    """
     try:
         # Crear directorio temporal
         temp_dir = tempfile.mkdtemp()

@@ -6,9 +6,8 @@ import zipfile
 import shutil
 import logging
 
-# Importar el sistema unificado
-from repository.proyectos.unified_csv_processor import UnifiedCSVProcessor, process_csv_file
-from repository.proyectos.factory import get_project_config
+# Importar el nuevo sistema simple
+from repository.proyectos.validators_config import create_processor_for_project
 
 # Configurar logger simple para debugging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,7 +22,7 @@ def normalizar_columnas_coljuegos_disciplinarios_upload(
     nombre_archivo_salida: str = Form(...),
     nombre_archivo_errores: str = Form(...),
 ):
-    """Normaliza columnas para archivos disciplinarios de COLJUEGOS usando el sistema unificado"""
+    """Normaliza columnas para archivos disciplinarios de COLJUEGOS usando el nuevo sistema simple"""
     temp_dir = None
     zip_dir = None
     
@@ -39,23 +38,10 @@ def normalizar_columnas_coljuegos_disciplinarios_upload(
         output_file = os.path.join(temp_dir, nombre_archivo_salida)
         error_file = os.path.join(temp_dir, nombre_archivo_errores)
         
-        # type_mapping para COLJUEGOS disciplinarios usando nombres de columnas
-        type_mapping = {
-            "datetime": ["FECHA_DE_RADICACION", "FECHA_DE_LOS_HECHOS", "FECHA_DE_INDAGACION_PRELIMINAR", 
-                        "FECHA_DE_INVESTIGACION_DISCIPLINARIA", "FECHA_DE_FALLO", "FECHA_CITACION", 
-                        "FECHA_DE_PLIEGO_DE__CARGOS", "FECHA_DE_CIERRE_INVESTIGACION"],
-            "str": ["NOMBRE_ARCHIVO", "MES_REPORTE", "EXPEDIENTE", "IMPLICADO", "DEPARTAMENTO_DE_LOS_HECHOS",
-                   "CIUDAD_DE_LOS_HECHOS", "DEPENDENCIA", "SUBPROCESO", "PROCEDIMIENTO", "CARGO", "ORIGEN",
-                   "CONDUCTA", "ETAPA_PROCESAL", "SANCION_IMPUESTA", "HECHOS", "DECISION_DE_LA_INVESTIGACION",
-                   "TIPO_DE_PROCESO_AFECTADO", "SENALADOS_O_VINCULADOS_CON_LA_INVESTIGACION", "ADECUACION_TIPICA",
-                   "ABOGADO", "SENTIDO_DEL_FALLO", "QUEJOSO", "TIPO_DE_PROCESO"],
-            "nit": ["DOCUMENTO_DEL_IMPLICADO", "DOC_QUEJOSO"],
-            "choice_direccion_seccional": ["DIRECCION_SECCIONAL"],
-            "choice_proceso": ["PROCESO"],
-        }
-        
-        # Usar el sistema unificado
-        process_csv_file('COLJUEGOS', 'disciplinarios', temp_input_path, output_file, error_file, type_mapping)
+        # Usar el nuevo sistema simple
+        processor = create_processor_for_project('COLJUEGOS', 'disciplinarios')
+        stats = processor.process_csv(temp_input_path, output_file, error_file)
+        logger.info(f"Procesamiento COLJUEGOS disciplinarios completado: {stats}")
         
         # Crear directorio temporal separado para el ZIP
         zip_dir = tempfile.mkdtemp()
@@ -116,7 +102,7 @@ def normalizar_columnas_coljuegos_pqr_upload(
     nombre_archivo_salida: str = Form(...),
     nombre_archivo_errores: str = Form(...),
 ):
-    """Normaliza columnas para archivos PQR de COLJUEGOS usando el sistema unificado"""
+    """Normaliza columnas para archivos PQR de COLJUEGOS usando el nuevo sistema simple"""
     temp_dir = None
     zip_dir = None
     
@@ -132,16 +118,10 @@ def normalizar_columnas_coljuegos_pqr_upload(
         output_file = os.path.join(temp_dir, nombre_archivo_salida)
         error_file = os.path.join(temp_dir, nombre_archivo_errores)
         
-        # type_mapping para COLJUEGOS PQR usando nombres de columnas
-        type_mapping = {
-            "datetime": ["FECHA_RADICACION", "FECHA_RESPUESTA"],
-            "str": ["NOMBRE_ARCHIVO", "MES_REPORTE", "NUMERO_PQR", "TIPO_PQR", "DESCRIPCION", 
-                   "ESTADO", "RESPUESTA", "FUNCIONARIO_RESPONSABLE"],
-            "nit": ["DOCUMENTO_SOLICITANTE"],
-        }
-        
-        # Usar el sistema unificado
-        process_csv_file('COLJUEGOS', 'pqr', temp_input_path, output_file, error_file, type_mapping)
+        # Usar el nuevo sistema simple
+        processor = create_processor_for_project('COLJUEGOS', 'PQR')
+        stats = processor.process_csv(temp_input_path, output_file, error_file)
+        logger.info(f"Procesamiento COLJUEGOS PQR completado: {stats}")
         
         # Crear directorio temporal separado para el ZIP
         zip_dir = tempfile.mkdtemp()
@@ -202,7 +182,7 @@ def normalizar_columnas_dian_disciplinarios_upload(
     nombre_archivo_salida: str = Form(...),
     nombre_archivo_errores: str = Form(...),
 ):
-    """Normaliza columnas para archivos disciplinarios de DIAN usando el sistema unificado"""
+    """Normaliza columnas para archivos disciplinarios de DIAN usando el nuevo sistema simple"""
     logger.info(f"=== INICIO: normalizar_columnas_dian_disciplinarios_upload ===")
     logger.info(f"Archivo recibido: {file.filename}")
     logger.info(f"Archivo de salida: {nombre_archivo_salida}")
@@ -249,27 +229,11 @@ def normalizar_columnas_dian_disciplinarios_upload(
         logger.info(f"Archivo de salida: {output_file}")
         logger.info(f"Archivo de errores: {error_file}")
         
-        # type_mapping para DIAN disciplinarios usando nombres de columnas
-        type_mapping = {
-            "datetime": ["FECHA_DE_RADICACION", "FECHA_DE_LOS_HECHOS", "FECHA_DE_INDAGACION_PRELIMINAR", 
-                        "FECHA_DE_INVESTIGACION_DISCIPLINARIA", "FECHA_DE_FALLO", "FECHA_CITACION", 
-                        "FECHA_DE_PLIEGO_DE__CARGOS", "FECHA_DE_CIERRE_INVESTIGACION"],
-            "str": ["NOMBRE_ARCHIVO", "MES_REPORTE", "EXPEDIENTE", "IMPLICADO", "DEPENDENCIA", "SUBPROCESO", "PROCEDIMIENTO", "CARGO", "ORIGEN",
-                   "CONDUCTA", "ETAPA_PROCESAL", "SANCION_IMPUESTA", "HECHOS", "DECISION_DE_LA_INVESTIGACION",
-                   "TIPO_DE_PROCESO_AFECTADO", "SENALADOS_O_VINCULADOS_CON_LA_INVESTIGACION", "ADECUACION_TIPICA",
-                   "ABOGADO", "SENTIDO_DEL_FALLO", "QUEJOSO", "TIPO_DE_PROCESO"],
-            "nit": ["DOCUMENTO_DEL_IMPLICADO", "DOC_QUEJOSO"],
-            "departamento": ["DEPARTAMENTO_DE_LOS_HECHOS"],
-            "ciudad": ["CIUDAD_DE_LOS_HECHOS"],
-            "direccion_seccional": ["DIRECCION_SECCIONAL"],
-            "proceso": ["PROCESO"],
-        }
-        logger.info(f"Type mapping configurado: {type_mapping}")
-        
-        # Usar el sistema unificado
-        logger.info("=== LLAMANDO A process_csv_file ===")
-        process_csv_file('DIAN', 'disciplinarios', temp_input_path, output_file, error_file, type_mapping)
-        logger.info("=== process_csv_file COMPLETADO ===")
+        # Usar el nuevo sistema simple
+        logger.info("=== LLAMANDO AL NUEVO SISTEMA SIMPLE ===")
+        processor = create_processor_for_project('DIAN', 'disciplinarios')
+        stats = processor.process_csv(temp_input_path, output_file, error_file)
+        logger.info(f"=== Procesamiento completado: {stats} ===")
         
         # Crear directorio temporal separado para el ZIP
         zip_dir = tempfile.mkdtemp()
@@ -338,7 +302,7 @@ def normalizar_columnas_dian_pqr_upload(
     nombre_archivo_salida: str = Form(...),
     nombre_archivo_errores: str = Form(...),
 ):
-    """Normaliza columnas para archivos PQR de DIAN usando el sistema unificado"""
+    """Normaliza columnas para archivos PQR de DIAN usando el nuevo sistema simple"""
     temp_dir = None
     zip_dir = None
     
@@ -354,16 +318,10 @@ def normalizar_columnas_dian_pqr_upload(
         output_file = os.path.join(temp_dir, nombre_archivo_salida)
         error_file = os.path.join(temp_dir, nombre_archivo_errores)
         
-        # type_mapping para DIAN PQR usando nombres de columnas
-        type_mapping = {
-            "datetime": ["FECHA_RADICACION", "FECHA_RESPUESTA"],
-            "str": ["NOMBRE_ARCHIVO", "MES_REPORTE", "NUMERO_PQR", "TIPO_PQR", "DESCRIPCION", 
-                   "ESTADO", "RESPUESTA", "FUNCIONARIO_RESPONSABLE"],
-            "nit": ["DOCUMENTO_SOLICITANTE"],
-        }
-        
-        # Usar el sistema unificado
-        process_csv_file('DIAN', 'pqr', temp_input_path, output_file, error_file, type_mapping)
+        # Usar el nuevo sistema simple
+        processor = create_processor_for_project('DIAN', 'PQR')
+        stats = processor.process_csv(temp_input_path, output_file, error_file)
+        logger.info(f"Procesamiento DIAN PQR completado: {stats}")
         
         # Crear directorio temporal separado para el ZIP
         zip_dir = tempfile.mkdtemp()
@@ -424,7 +382,7 @@ def normalizar_columnas_dian_notificaciones_upload(
     nombre_archivo_salida: str = Form(...),
     nombre_archivo_errores: str = Form(...),
 ):
-    """Normaliza columnas para archivos de notificaciones de DIAN usando el sistema unificado"""
+    """Normaliza columnas para archivos de notificaciones de DIAN usando el nuevo sistema simple"""
     temp_dir = None
     zip_dir = None
     
@@ -440,23 +398,10 @@ def normalizar_columnas_dian_notificaciones_upload(
         output_file = os.path.join(temp_dir, nombre_archivo_salida)
         error_file = os.path.join(temp_dir, nombre_archivo_errores)
         
-        # type_mapping para DIAN notificaciones usando nombres de columnas
-        type_mapping = {
-            "datetime": ["FECHA_ACTO", "FECHA_PLANILLA_REMISION", "FECHA_CITACION", 
-                        "FECHA_PLANILLA_CORR", "FECHA_NOTIFICACION", "FECHA_EJECUTORIA"],
-            "str": ["PLAN_IDENTIF_ACTO", "CODIGO_ADMINISTRACION", "SECCIONAL", "CODIGO_DEPENDENCIA",
-                   "DEPENDENCIA", "ANO_CALENDARIO", "CODIGO_ACTO", "DESCRIPCION_ACTO", "ANO_ACTO",
-                   "CONSECUTIVO_ACTO", "RAZON_SOCIAL", "DIRECCION", "PLANILLA_REMISION", "FUNCIONARIO_ENVIA",
-                   "PLANILLA_CORR", "GUIA", "COD_ESTADO", "COD_NOTIFICACION"],
-            "nit": ["NIT"],
-            "float": ["CUANTIA_ACTO"],
-            "choice_estado_notificacion": ["ESTADO_NOTIFICACION"],
-            "choice_proceso": ["PROCESO"],
-            "choice_dependencia": ["DEPENDENCIA"],
-        }
-        
-        # Usar el sistema unificado
-        process_csv_file('DIAN', 'notificaciones', temp_input_path, output_file, error_file, type_mapping)
+        # Usar el nuevo sistema simple
+        processor = create_processor_for_project('DIAN', 'notificaciones')
+        stats = processor.process_csv(temp_input_path, output_file, error_file)
+        logger.info(f"Procesamiento DIAN notificaciones completado: {stats}")
         
         # Crear directorio temporal separado para el ZIP
         zip_dir = tempfile.mkdtemp()
@@ -516,22 +461,27 @@ def normalizar_columnas_dian_notificaciones_upload(
 def get_processors_info():
     """Obtiene información de todos los procesadores disponibles."""
     try:
-        from repository.proyectos.unified_csv_processor import get_processor_info
-        
         processors_info = {}
         
         # Información de procesadores disponibles
         available_processors = [
             ('DIAN', 'notificaciones'),
             ('DIAN', 'disciplinarios'),
-            ('DIAN', 'pqr'),
+            ('DIAN', 'PQR'),
             ('COLJUEGOS', 'disciplinarios'),
-            ('COLJUEGOS', 'pqr'),
+            ('COLJUEGOS', 'PQR'),
         ]
         
         for project_code, module_name in available_processors:
             try:
-                info = get_processor_info(project_code, module_name)
+                processor = create_processor_for_project(project_code, module_name)
+                info = {
+                    "project_code": project_code,
+                    "module_name": module_name,
+                    "reference_headers": processor.reference_headers,
+                    "validators": list(processor.validators.keys()),
+                    "type_mapping": processor.type_mapping
+                }
                 processors_info[f"{project_code}:{module_name}"] = info
             except Exception as e:
                 logger.warning(f"No se pudo obtener información para {project_code}:{module_name}: {e}")
