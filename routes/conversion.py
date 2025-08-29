@@ -29,19 +29,25 @@ def csv_a_otro_separador(body: dict = Body(...)):
             nombre_archivo_base, _ = os.path.splitext(
                 os.path.basename(nombre_archivo_csv_at)
             )
-            nombre_archivo_csv_pipe = nombre_archivo_base + ".csv"
-            archivo_salida = os.path.join(temp_dir, nombre_archivo_csv_pipe)
+            nombre_archivo_csv = nombre_archivo_base + ".csv"
+            archivo_salida = os.path.join(temp_dir, nombre_archivo_csv)
             with open(
                 nombre_archivo_csv_at, "r", newline="", encoding="utf-8"
             ) as infile, open(
                 archivo_salida, "w", newline="", encoding="utf-8"
             ) as outfile:
                 coincidencia_fecha = re.search(r"I(\d{8})", nombre_archivo_csv_at)
+                coincidencia_fecha_dd_mm_yyyy = re.search(r"(\d{2})-(\d{2})-(\d{4})", nombre_archivo_csv_at)
                 mes_reporte = "Desconocido"
                 if coincidencia_fecha:
                     fecha_str = coincidencia_fecha.group(1)
                     anio = fecha_str[:4]
                     mes = fecha_str[4:6]
+                    mes_reporte = f"{mes}_{anio}"
+                elif coincidencia_fecha_dd_mm_yyyy:
+                    dia = coincidencia_fecha_dd_mm_yyyy.group(1)
+                    mes = coincidencia_fecha_dd_mm_yyyy.group(2)
+                    anio = coincidencia_fecha_dd_mm_yyyy.group(3)
                     mes_reporte = f"{mes}_{anio}"
                 primera_linea = infile.readline().strip()
                 cabecera = primera_linea.split(antiguo_separador)
@@ -63,11 +69,17 @@ def csv_a_otro_separador(body: dict = Body(...)):
                     archivo_salida, "w", newline="", encoding="utf-8"
                 ) as outfile:
                     coincidencia_fecha = re.search(r"I(\d{8})", nombre_archivo_csv_at)
+                    coincidencia_fecha_dd_mm_yyyy = re.search(r"(\d{2})-(\d{2})-(\d{4})", nombre_archivo_csv_at)
                     mes_reporte = "Desconocido"
                     if coincidencia_fecha:
                         fecha_str = coincidencia_fecha.group(1)
                         anio = fecha_str[:4]
                         mes = fecha_str[4:6]
+                        mes_reporte = f"{mes}_{anio}"
+                    elif coincidencia_fecha_dd_mm_yyyy:
+                        dia = coincidencia_fecha_dd_mm_yyyy.group(1)
+                        mes = coincidencia_fecha_dd_mm_yyyy.group(2)
+                        anio = coincidencia_fecha_dd_mm_yyyy.group(3)
                         mes_reporte = f"{mes}_{anio}"
                     primera_linea = infile_latin.readline().strip()
                     cabecera = primera_linea.split(antiguo_separador)
@@ -393,6 +405,7 @@ def xlsx_a_csv_upload(
             shutil.copyfileobj(file.file, f)
         try:
             nombre_archivo_base, _ = os.path.splitext(os.path.basename(file.filename))
+            
             nombre_archivo_csv = (
                 nombre_archivo_base.replace(" ", "_")
                 .replace("de_", "")
@@ -400,6 +413,7 @@ def xlsx_a_csv_upload(
                 .replace(".", "_")
                 + ".csv"
             )
+            
             archivo_salida = os.path.join(temp_dir, nombre_archivo_csv)
             coincidencia = re.search(r"Mes_([A-Za-z]+)_(\d{4})", nombre_archivo_csv)
             coincidencia_2 = re.search(
@@ -408,7 +422,9 @@ def xlsx_a_csv_upload(
             coincidencia_fecha = re.search(r"I(\d{8})", nombre_archivo_csv)
             coincidencia_pqr = re.search(r"(\d{4})-(\d{2})", nombre_archivo_csv)
             coincidencia_dynamics = re.search(r"_(\w+)_(\d{4})_", nombre_archivo_csv)
+            coincidencia_fecha_dd_mm_yyyy = re.search(r"(\d{2})-(\d{2})-(\d{4})", nombre_archivo_csv)
             mes_reporte = "Desconocido"
+            
             if coincidencia:
                 mes_nombre = coincidencia.group(1).capitalize()
                 anio = coincidencia.group(2)
@@ -421,25 +437,98 @@ def xlsx_a_csv_upload(
                 mes_numero = MESES.get(mes_nombre)
                 if mes_numero:
                     mes_reporte = f"{mes_numero}_{anio}"
-            if coincidencia_fecha:
+            elif coincidencia_fecha:
                 fecha_str = coincidencia_fecha.group(1)
                 anio = fecha_str[:4]
                 mes = fecha_str[4:6]
                 mes_reporte = f"{mes}_{anio}"
-            if coincidencia_dynamics:
+            elif coincidencia_dynamics:
                 mes_nombre = coincidencia_dynamics.group(1).lower()
                 anio = coincidencia_dynamics.group(2)
                 mes_numero = MESES_LOWER.get(mes_nombre)
                 if mes_numero:
                     mes_reporte = f"{mes_numero}_{anio}"
-            if coincidencia_pqr:
+            elif coincidencia_pqr:
                 anio = coincidencia_pqr.group(1)
                 mes_numero = coincidencia_pqr.group(2)
                 mes_numero_sin_cero = str(int(mes_numero))
                 mes_reporte = f"{mes_numero_sin_cero}_{anio}"
-            df = pd.read_excel(temp_input_path)
+            elif coincidencia_fecha_dd_mm_yyyy:
+                dia = coincidencia_fecha_dd_mm_yyyy.group(1)
+                mes = coincidencia_fecha_dd_mm_yyyy.group(2)
+                anio = coincidencia_fecha_dd_mm_yyyy.group(3)
+                mes_reporte = f"{dia}-{mes}-{anio}"
+            
+            df = pd.read_excel(temp_input_path, dtype=str)
             if not df.empty and len(df) > 0:
                 df = df.iloc[1:]
+            
+            for col in df.columns:
+                df[col] = df[col].astype(str).apply(lambda x: 
+                    x.replace('.0', '') if x.endswith('.0') and x.replace('.0', '').isdigit() 
+                    else x
+                )
+            
+            # Detectar y convertir fechas de Excel
+            for col in df.columns:
+                sample_values = df[col].dropna().head(10)
+                if len(sample_values) > 0:
+                    fecha_pattern_iso = r'^\d{4}-\d{2}-\d{2}.*$'
+                    
+                    fecha_pattern_excel = r'^\d{1,6}$'
+                    
+                    col_name_lower = col.lower()
+                    is_likely_date_column = any(keyword in col_name_lower for keyword in [
+                        'fecha', 'fechas', 'date', 'programacion', 'programaciones', 'programación', 'inicio', 'fin', 'vencimiento','vencimientos',
+                        'creacion', 'creación', 'modificacion', 'modificación', 'ingreso', 'terminado', 'terminados'
+                    ])
+                    
+                    if is_likely_date_column:
+                        print(f"🔍 Columna '{col}': Probablemente contiene fechas")
+                        
+                        # Verificar formato ISO
+                        if any(re.match(fecha_pattern_iso, str(val)) for val in sample_values):
+                            try:
+                                df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime('%d/%m/%Y')
+                                df[col] = df[col].fillna('')
+                                print(f"   ✅ {col}: Convertido de ISO a DD/MM/YYYY")
+                            except:
+                                pass
+                        
+                        # Verificar formato Excel (solo si es probable que sea fecha)
+                        elif any(re.match(fecha_pattern_excel, str(val)) for val in sample_values):
+                            all_in_range = all(
+                                re.match(fecha_pattern_excel, str(val)) and 
+                                1 <= int(float(str(val))) <= 999999 
+                                for val in sample_values
+                            )
+                            
+                            if all_in_range:
+                                try:
+                                    numeric_values = pd.to_numeric(df[col], errors='coerce')
+                                    df[col] = pd.to_datetime(numeric_values, unit='D', origin='1900-01-01', errors='coerce').dt.strftime('%d/%m/%Y')
+                                    df[col] = df[col].fillna('')
+                                    print(f"   ✅ {col}: Convertido de Excel a DD/MM/YYYY")
+                                except:
+                                    pass
+                    
+                    # Si NO es una columna de fechas, NO convertir números a fechas
+                    else:
+                        print(f"🔍 Columna '{col}': Probablemente NO contiene fechas")
+                        # Aquí NO se hace conversión de fechas, se mantienen como números
+            
+            for col in df.columns:
+                sample_values = df[col].dropna().head(10)
+                if len(sample_values) > 0:
+                    large_number_pattern = r'^\d{16,}$'
+                    
+                    if any(re.match(large_number_pattern, str(val)) for val in sample_values):
+                        df[col] = df[col].apply(lambda x: f"'{x}" if re.match(large_number_pattern, str(x)) else x)
+            
+            for col in df.columns:
+                df[col] = df[col].replace(['nan', 'NaN', 'NAN', 'None', 'none', 'NONE'], '')
+                df[col] = df[col].apply(lambda x: '' if str(x).strip() == '' else x)
+            
             df.insert(0, "nombre_archivo", nombre_archivo_base)
             df.insert(1, "mes_reporte", mes_reporte)
             df.to_csv(

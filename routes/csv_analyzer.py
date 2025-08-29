@@ -228,7 +228,6 @@ async def analyze_csv(
     extract_choices: bool = Form(True)  # Nuevo parámetro para extraer choices
 ):
     try:
-        breakpoint()
         # Crear directorio temporal
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file.filename)
@@ -463,7 +462,14 @@ async def get_column_choices(
             )
         
         # Extraer valores únicos - SIN LÍMITE por defecto
+        logger.info(f"🔍 Extrayendo valores únicos para columna '{target_column}'")
+        logger.info(f"🔍 Parámetro max_values recibido: {max_values} (tipo: {type(max_values)})")
+        logger.info(f"🔍 Total de filas en la columna: {len(df[target_column])}")
+        
         unique_values = extract_unique_values(df[target_column], max_values=max_values)
+        
+        logger.info(f"🔍 Valores únicos extraídos: {len(unique_values)}")
+        logger.info(f"🔍 Primeros 5 valores únicos: {unique_values[:5] if unique_values else 'Ninguno'}")
         
         # Limpiar archivo temporal
         try:
