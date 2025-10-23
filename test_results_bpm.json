@@ -1,0 +1,49 @@
+{
+  "total_tests": 8,
+  "passed_tests": 6,
+  "failed_tests": 2,
+  "success_rate": 75.0,
+  "duration": 0.5334000587463379,
+  "results": [
+    {
+      "test": "Endpoint Disponibilidad",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "An\u00e1lisis de Estructura CSV",
+      "success": true,
+      "details": "CSV analizado correctamente: 4 filas, 180 columnas"
+    },
+    {
+      "test": "Validaci\u00f3n de Contenido CSV",
+      "success": true,
+      "details": "Contenido validado: 4 campos verificados"
+    },
+    {
+      "test": "Archivo de Prueba Existe",
+      "success": true,
+      "details": "Archivo encontrado: 8721 bytes"
+    },
+    {
+      "test": "Carga de Archivo",
+      "success": false,
+      "details": "Status: 404, Content-Type: application/json"
+    },
+    {
+      "test": "Manejo de Archivo Inv\u00e1lido",
+      "success": true,
+      "details": "Status: 404, Respuesta: {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "Manejo de Par\u00e1metros Faltantes",
+      "success": false,
+      "details": "Status: 404, Respuesta: {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "Calidad de Procesamiento CSV",
+      "success": true,
+      "details": "Columnas detectadas: 4"
+    }
+  ]
+}

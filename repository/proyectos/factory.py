@@ -11,6 +11,7 @@ from .base.config_base import ProjectConfigBase
 from .DIAN.config import DIANConfig
 from .COLJUEGOS.config import COLJUEGOSConfig
 from .UGPP.config import UGPPConfig
+from .BPM.config import BPMConfig
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,8 @@ class ProjectConfigFactory:
     _configs: Dict[str, Type[ProjectConfigBase]] = {
         'DIAN': DIANConfig,
         'COLJUEGOS': COLJUEGOSConfig,
-        'UGPP': UGPPConfig
+        'UGPP': UGPPConfig,
+        'BPM': BPMConfig
     }
     
     # Cache de instancias de configuración

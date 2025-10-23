@@ -101,6 +101,15 @@ VALIDATORS_CONFIG = {
                 ])
             },
             'dynamics': {
+                'clasificacion': ChoiceValidator([
+                    'clasificacion dynamics 1', 'clasificacion dynamics 2'
+                ]),
+                'calidad_quien_solicito': ChoiceValidator([
+                    'calidad dynamics 1', 'calidad dynamics 2'
+                ]),
+                'estado_solicitud': ChoiceValidator([
+                    'estado dynamics 1', 'estado dynamics 2'
+                ]),
                 'direccion_seccional': ChoiceValidator([
                     'direccion dynamics 1', 'direccion dynamics 2'
                 ])
@@ -109,28 +118,82 @@ VALIDATORS_CONFIG = {
     },
     'COLJUEGOS': {
         'disciplinarios': {
+            'departamento': ChoiceValidator([
+                'AMAZONAS', 'ANTIOQUIA', 'ARAUCA', 'ATLANTICO', 'BOGOTA', 'BOLIVAR',
+                'BOYACA', 'CALDAS', 'CAQUETA', 'CASANARE', 'CAUCA', 'CESAR', 'CHOCO',
+                'CORDOBA', 'CUNDINAMARCA', 'GUAINIA', 'GUAVIARE', 'HUILA', 'LA GUAJIRA',
+                'MAGDALENA', 'META', 'NARINO', 'NORTE DE SANTANDER', 'PUTUMAYO',
+                'QUINDIO', 'RISARALDA', 'SAN ANDRES Y PROVIDENCIA', 'SANTANDER',
+                'SUCRE', 'TOLIMA', 'VALLE DEL CAUCA', 'VICHADA'
+            ]),
             'direccion_seccional': ChoiceValidator([
-                'direccion coljuegos 1', 'direccion coljuegos 2'
+                'direccion seccional 1', 'direccion seccional 2', 'direccion seccional 3'
             ]),
             'proceso': ChoiceValidator([
-                'proceso coljuegos 1', 'proceso coljuegos 2'
+                'proceso coljuegos 1', 'proceso coljuegos 2', 'proceso coljuegos 3'
             ])
         },
         'PQR': {
-            'direccion_seccional': ChoiceValidator([
-                'direccion coljuegos pqr 1', 'direccion coljuegos pqr 2'
+            'clasificacion': ChoiceValidator([
+                'clasificacion coljuegos 1', 'clasificacion coljuegos 2'
+            ]),
+            'dependencia_asignada': ChoiceValidator([
+                'dependencia coljuegos 1', 'dependencia coljuegos 2'
+            ]),
+            'linea_negocio': ChoiceValidator([
+                'linea coljuegos 1', 'linea coljuegos 2'
             ])
         }
     },
     'UGPP': {
         'disciplinarios': {
+            'dependencia': ChoiceValidator([
+                'dependencia ugpp 1', 'dependencia ugpp 2', 'dependencia ugpp 3'
+            ]),
             'direccion_seccional': ChoiceValidator([
                 'direccion ugpp 1', 'direccion ugpp 2'
             ])
         },
         'PQR': {
-            'direccion_seccional': ChoiceValidator([
-                'direccion ugpp pqr 1', 'direccion ugpp pqr 2'
+            'categoria_1': ChoiceValidator([
+                'categoria ugpp 1', 'categoria ugpp 2'
+            ]),
+            'clasificacion': ChoiceValidator([
+                'clasificacion ugpp 1', 'clasificacion ugpp 2'
+            ]),
+            'dependen_asigna': ChoiceValidator([
+                'dependencia ugpp 1', 'dependencia ugpp 2'
+            ])
+        }
+    },
+    'BPM': {
+        'default': {
+            'estado': ChoiceValidator([
+                'ACTIVO', 'SUSPENDIDO', 'TERMINADO', 'ARCHIVADO', 'EN_PROCESO'
+            ]),
+            'tipo_expediente': ChoiceValidator([
+                'FISCALIZACION', 'SANCION', 'COBRO_COACTIVO', 'RECURSO', 'REVOCATORIA'
+            ]),
+            'tipo_aportante': ChoiceValidator([
+                'PERSONA_NATURAL', 'PERSONA_JURIDICA', 'ENTIDAD_PUBLICA'
+            ]),
+            'tamano': ChoiceValidator([
+                'PEQUEÑA', 'MEDIANA', 'GRANDE', 'MICROEMPRESA'
+            ]),
+            'programa': ChoiceValidator([
+                'PROGRAMA_1', 'PROGRAMA_2', 'PROGRAMA_3', 'PROGRAMA_4'
+            ]),
+            'etapa': ChoiceValidator([
+                'INICIO', 'FISCALIZACION', 'LIQUIDACION', 'COBRO', 'FINALIZADO'
+            ]),
+            'tipo_proceso_concursal': ChoiceValidator([
+                'LIQUIDACION', 'REORGANIZACION', 'CONCURSO_MERCANTIL'
+            ]),
+            'decision_recurso': ChoiceValidator([
+                'ADMITIDO', 'RECHAZADO', 'PARCIALMENTE_ADMITIDO'
+            ]),
+            'decision_revocatoria': ChoiceValidator([
+                'ACEPTADA', 'RECHAZADA', 'PARCIALMENTE_ACEPTADA'
             ])
         }
     }

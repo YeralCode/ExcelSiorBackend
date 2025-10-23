@@ -1,0 +1,5 @@
+nombre_archivo|mes_reporte|Programa|Estado|Tipo de proceso concursal|Área que informa proceso|Etapa con la que migró BPM
+test_invalid1|01/2020|Programa Inexistente|Estado Invalido|Proceso Invalido|Area Invalida|Etapa Invalida
+test_invalid2|02/2020|Otro Programa|Otro Estado|Otro Proceso|Otra Area|Otra Etapa
+test_valid1|03/2020|Selección 2014|Terminado|Liquidación|Completitud|COMPLETITUD
+test_valid2|04/2020|Denuncias|Activo|Concordato|Determinación|OMISOS_Y_ATENCION_APORTANTES 

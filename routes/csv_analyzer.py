@@ -419,6 +419,13 @@ async def get_column_choices(
         with open(temp_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
         
+        # Verificar que el archivo se guardó correctamente
+        if os.path.exists(temp_path):
+            file_size = os.path.getsize(temp_path)
+            logger.info(f"   ✅ Archivo guardado. Tamaño en disco: {file_size} bytes")
+        else:
+            raise Exception("El archivo temporal no se creó correctamente")
+        
         # Detectar separador automáticamente
         separator_info = separator_detector.get_separator_info(temp_path)
         detected_separator = separator_info["detected_separator"]
@@ -426,11 +433,97 @@ async def get_column_choices(
         # Leer CSV
         try:
             df = pd.read_csv(temp_path, dtype=str, encoding='utf-8', sep=detected_separator)
-        except:
+            logger.info(f"   ✅ CSV leído exitosamente con separador '{detected_separator}' y encoding utf-8")
+        except Exception as e1:
+            logger.warning(f"   ⚠️  Separador '{detected_separator}' con utf-8 falló: {str(e1)}")
+            
+            # Configuración 2: Con encoding latin-1
             try:
                 df = pd.read_csv(temp_path, dtype=str, encoding='latin-1', sep=detected_separator)
-            except:
-                df = pd.read_csv(temp_path, dtype=str, sep=None, engine='python')
+            except Exception as e2:
+                # Configuración 3: Con engine python
+                try:
+                    df = pd.read_csv(temp_path, dtype=str, engine='python', sep=detected_separator)
+                except Exception as e3:
+                    # Configuración 4: Último intento con separador automático
+                    try:
+                        df = pd.read_csv(temp_path, dtype=str, sep=None, engine='python')
+                    except Exception as e4:
+                        raise Exception(f"No se pudo leer el archivo CSV: {str(e4)}")
+        
+        # Verificar que se leyó todo el archivo
+        logger.info(f"   📊 Archivo leído completamente:")
+        logger.info(f"      - Filas totales: {len(df):,}")
+        logger.info(f"      - Columnas totales: {len(df.columns)}")
+        logger.info(f"      - Memoria utilizada: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB")
+        
+        # 🔍 VERIFICACIÓN ADICIONAL: Comparar con tamaño del archivo
+        file_size_bytes = os.path.getsize(temp_path)
+        file_size_mb = file_size_bytes / 1024 / 1024
+        logger.info(f"      - Tamaño del archivo en disco: {file_size_mb:.2f} MB")
+        
+        # Calcular densidad de datos esperada
+        if len(df) > 0:
+            bytes_per_row = file_size_bytes / len(df)
+            logger.info(f"      - Bytes por fila: {bytes_per_row:.2f}")
+            logger.info(f"      - Densidad de datos: {len(df.columns) * bytes_per_row:.2f} bytes por fila-columna")
+            
+            # Verificar si la densidad parece razonable
+            if bytes_per_row < 10:  # Menos de 10 bytes por fila es sospechoso
+                logger.warning(f"      ⚠️  ADVERTENCIA: Densidad de datos muy baja ({bytes_per_row:.2f} bytes/fila)")
+                logger.warning(f"      ⚠️  El archivo puede no haberse leído completamente")
+            elif bytes_per_row > 10000:  # Más de 10KB por fila es sospechoso
+                logger.warning(f"      ⚠️  ADVERTENCIA: Densidad de datos muy alta ({bytes_per_row:.2f} bytes/fila)")
+                logger.warning(f"      ⚠️  Verificar separador y encoding")
+            else:
+                logger.info(f"      ✅ Densidad de datos parece normal")
+        
+        # 🔍 VERIFICACIÓN ADICIONAL: Verificar que no haya truncamiento
+        if len(df) > 0:
+            logger.info(f"      - Primera fila: {df.iloc[0].tolist()[:3]}...")  # Primeras 3 columnas
+            logger.info(f"      - Última fila: {df.iloc[-1].tolist()[:3]}...")  # Primeras 3 columnas
+            
+            # Verificar que la última fila no esté truncada
+            last_row = df.iloc[-1]
+            if last_row.isna().sum() > len(last_row) * 0.5:  # Si más del 50% son NaN
+                logger.warning(f"      ⚠️  ADVERTENCIA: Última fila parece estar truncada")
+                logger.warning(f"      ⚠️  Verificar separador y encoding del archivo")
+        
+        # 🔍 VERIFICACIÓN ADICIONAL: Intentar lectura alternativa si hay sospechas
+        if file_size_mb > 100 and len(df) < 500000:  # Archivo grande con pocas filas
+            logger.warning(f"      ⚠️  SOSPECHA: Archivo muy grande ({file_size_mb:.2f} MB) pero pocas filas ({len(df):,})")
+            logger.info(f"      🔍 Intentando lectura alternativa para verificar...")
+            
+            try:
+                # Intentar lectura con diferentes configuraciones
+                df_alt1 = pd.read_csv(temp_path, dtype=str, sep=None, engine='python')
+                logger.info(f"      - Lectura alternativa 1: {len(df_alt1):,} filas")
+                
+                df_alt2 = pd.read_csv(temp_path, dtype=str, sep=None, engine='c')
+                logger.info(f"      - Lectura alternativa 2: {len(df_alt2):,} filas")
+                
+                # Usar el que tenga más filas
+                if len(df_alt1) > len(df) or len(df_alt2) > len(df):
+                    if len(df_alt1) > len(df_alt2):
+                        df = df_alt1
+                        logger.info(f"      ✅ Usando lectura alternativa 1: {len(df):,} filas")
+                    else:
+                        df = df_alt2
+                        logger.info(f"      ✅ Usando lectura alternativa 2: {len(df):,} filas")
+                else:
+                    logger.info(f"      ✅ Lectura original es la mejor: {len(df):,} filas")
+                    
+            except Exception as e:
+                logger.warning(f"      ⚠️  No se pudo realizar lectura alternativa: {str(e)}")
+        
+        # 🔍 VERIFICACIÓN FINAL: Confirmar resultado
+        logger.info(f"      🎯 RESULTADO FINAL:")
+        logger.info(f"         - Filas procesadas: {len(df):,}")
+        logger.info(f"         - Columnas procesadas: {len(df.columns)}")
+        logger.info(f"         - Memoria final: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB")
+        
+        if len(df) == 0:
+            raise Exception("El archivo CSV no contiene datos o no se pudo leer correctamente")
         
         # Crear mapeo de nombres normalizados a nombres originales
         normalized_to_original = {}
@@ -453,23 +546,27 @@ async def get_column_choices(
             # Si no se encuentra, mostrar todas las columnas disponibles para debugging
             available_columns = list(df.columns)
             available_normalized = [normalize_column_name(col) for col in df.columns]
-            logger.error(f"Columna '{column_name}' no encontrada. Columnas disponibles:")
-            logger.error(f"  Originales: {available_columns}")
-            logger.error(f"  Normalizadas: {available_normalized}")
+            logger.error(f"   Columna '{column_name}' no encontrada. Columnas disponibles:")
+            logger.error(f"      Originales: {available_columns}")
+            logger.error(f"      Normalizadas: {available_normalized}")
             raise HTTPException(
                 status_code=400, 
                 detail=f"La columna '{column_name}' no existe en el archivo. Columnas disponibles: {available_columns}"
             )
         
+        # Verificar datos de la columna objetivo
+        column_data = df[target_column]
+        
         # Extraer valores únicos - SIN LÍMITE por defecto
-        logger.info(f"🔍 Extrayendo valores únicos para columna '{target_column}'")
-        logger.info(f"🔍 Parámetro max_values recibido: {max_values} (tipo: {type(max_values)})")
-        logger.info(f"🔍 Total de filas en la columna: {len(df[target_column])}")
+        logger.info(f"   🔍 Extrayendo valores únicos para columna '{target_column}'")
+        logger.info(f"   🔍 Parámetro max_values recibido: {max_values} (tipo: {type(max_values)})")
         
-        unique_values = extract_unique_values(df[target_column], max_values=max_values)
+        unique_values = extract_unique_values(column_data, max_values=max_values)
         
-        logger.info(f"🔍 Valores únicos extraídos: {len(unique_values)}")
-        logger.info(f"🔍 Primeros 5 valores únicos: {unique_values[:5] if unique_values else 'Ninguno'}")
+        logger.info(f"   ✅ Valores únicos extraídos exitosamente:")
+        logger.info(f"      - Total extraído: {len(unique_values)}")
+        logger.info(f"      - Primeros 5 valores: {unique_values[:5] if unique_values else 'Ninguno'}")
+        logger.info(f"      - Últimos 5 valores: {unique_values[-5:] if len(unique_values) > 5 else unique_values}")
         
         # Limpiar archivo temporal
         try:
@@ -484,7 +581,10 @@ async def get_column_choices(
             "normalized_column_name": normalize_column_name(target_column),
             "unique_values": unique_values,
             "total_unique_values": len(unique_values),
-            "max_values_requested": max_values if max_values else "Sin límite"
+            "max_values_requested": max_values if max_values else "Sin límite",
+            "total_rows_processed": len(df),
+            "file_size_bytes": file.size,
+            "separator_used": detected_separator
         }
         
     except HTTPException:

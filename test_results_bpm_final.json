@@ -1,0 +1,84 @@
+{
+  "total_tests": 15,
+  "passed_tests": 12,
+  "failed_tests": 3,
+  "success_rate": 80.0,
+  "duration": 0.15109729766845703,
+  "results": [
+    {
+      "test": "Salud del Endpoint",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Ruta BPM en OpenAPI",
+      "success": true,
+      "details": "Ruta /api/v1/normalizar-columnas/BPM/upload/ encontrada"
+    },
+    {
+      "test": "Carga de Archivo BPM V\u00e1lido",
+      "success": true,
+      "details": "Status: 200, Content-Type: application/zip"
+    },
+    {
+      "test": "Respuesta ZIP V\u00e1lida",
+      "success": true,
+      "details": "Archivo ZIP recibido: 8715 bytes"
+    },
+    {
+      "test": "Contenido ZIP - Archivo de Salida",
+      "success": true,
+      "details": "Archivo bpm_procesado.csv encontrado"
+    },
+    {
+      "test": "Contenido ZIP - Archivo de Errores",
+      "success": false,
+      "details": "Archivo bpm_errores.csv no encontrado"
+    },
+    {
+      "test": "Contenido del Archivo de Salida",
+      "success": true,
+      "details": "Archivo contiene 7 l\u00edneas"
+    },
+    {
+      "test": "Headers del Archivo de Salida",
+      "success": true,
+      "details": "Archivo tiene 64 columnas"
+    },
+    {
+      "test": "Carga de Archivo BPM Mixto",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Contenido ZIP - Archivo de Salida",
+      "success": true,
+      "details": "Archivo bpm_mixto_procesado.csv encontrado"
+    },
+    {
+      "test": "Contenido ZIP - Archivo de Errores",
+      "success": false,
+      "details": "Archivo bpm_mixto_errores.csv no encontrado"
+    },
+    {
+      "test": "Contenido del Archivo de Salida",
+      "success": true,
+      "details": "Archivo contiene 5 l\u00edneas"
+    },
+    {
+      "test": "Headers del Archivo de Salida",
+      "success": true,
+      "details": "Archivo tiene 7 columnas"
+    },
+    {
+      "test": "Manejo de Archivo Inv\u00e1lido",
+      "success": false,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Manejo de Par\u00e1metros Faltantes",
+      "success": true,
+      "details": "Status: 422"
+    }
+  ]
+}

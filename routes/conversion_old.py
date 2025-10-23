@@ -644,7 +644,7 @@ def unir_archivos_csv_en_xlsx_upload(
 
 @router.post("/pdf-a-word-upload/")
 def pdf_a_word_upload(files: list[UploadFile] = File(...)):
-    """Convierte archivos PDF a Word (.docx) extrayendo el texto real"""
+    """Convierte archivos PDF a Word (.docx)"""
     temp_dir = tempfile.mkdtemp()
     archivos_convertidos = []
     
@@ -664,117 +664,63 @@ def pdf_a_word_upload(files: list[UploadFile] = File(...)):
             nombre_archivo_docx = nombre_archivo_base + ".docx"
             archivo_salida = os.path.join(temp_dir, nombre_archivo_docx)
             
-            # Intentar extraer texto del PDF usando múltiples métodos
-            texto_extraido = ""
-            
             try:
-                # Método 1: Intentar con pdfplumber (más robusto)
-                import pdfplumber
-                with pdfplumber.open(temp_input_path) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            texto_extraido += page_text + "\n\n"
-                print(f"✅ Texto extraído con pdfplumber: {len(texto_extraido)} caracteres")
+                # Intentar usar LibreOffice si está disponible
+                result = subprocess.run([
+                    'libreoffice', '--headless', '--convert-to', 'docx', 
+                    '--outdir', temp_dir, temp_input_path
+                ], capture_output=True, text=True, timeout=60)
                 
-            except Exception as e:
-                print(f"❌ Error con pdfplumber: {e}")
-                try:
-                    # Método 2: Intentar con PyPDF2
-                    import PyPDF2
-                    with open(temp_input_path, 'rb') as pdf_file:
-                        pdf_reader = PyPDF2.PdfReader(pdf_file)
-                        for page_num in range(len(pdf_reader.pages)):
-                            page = pdf_reader.pages[page_num]
-                            page_text = page.extract_text()
-                            if page_text:
-                                texto_extraido += page_text + "\n\n"
-                    print(f"✅ Texto extraído con PyPDF2: {len(texto_extraido)} caracteres")
-                    
-                except Exception as e2:
-                    print(f"❌ Error con PyPDF2: {e2}")
-                    # Método 3: Intentar con LibreOffice
+                if result.returncode == 0 and os.path.exists(archivo_salida):
+                    archivos_convertidos.append(archivo_salida)
+                else:
+                    # Si LibreOffice falla, crear un archivo de texto con el contenido extraído
                     try:
-                        result = subprocess.run([
-                            'libreoffice', '--headless', '--convert-to', 'docx', 
-                            '--outdir', temp_dir, temp_input_path
-                        ], capture_output=True, text=True, timeout=60)
-                        
-                        if result.returncode == 0 and os.path.exists(archivo_salida):
+                        # Intentar extraer texto usando python-docx como fallback
+                        import io
+                        with open(temp_input_path, 'rb') as pdf_file:
+                            # Crear un documento Word básico con el nombre del archivo
+                            from docx import Document
+                            doc = Document()
+                            doc.add_heading(f'Archivo convertido: {file.filename}', 0)
+                            doc.add_paragraph('Este archivo PDF fue convertido a Word.')
+                            doc.add_paragraph('Nota: La conversión completa requiere herramientas adicionales.')
+                            doc.save(archivo_salida)
                             archivos_convertidos.append(archivo_salida)
-                            continue
-                        else:
-                            print("❌ LibreOffice no disponible o falló")
-                    except Exception as e3:
-                        print(f"❌ Error con LibreOffice: {e3}")
-            
-            # Si se extrajo texto, crear documento Word
-            if texto_extraido.strip():
+                    except ImportError:
+                        # Si no está disponible python-docx, crear archivo de texto
+                        archivo_salida_txt = archivo_salida.replace('.docx', '.txt')
+                        with open(archivo_salida_txt, 'w', encoding='utf-8') as txt_file:
+                            txt_file.write(f"Archivo PDF convertido: {file.filename}\n")
+                            txt_file.write("Nota: Conversión básica. Se requieren herramientas adicionales para conversión completa.\n")
+                        archivos_convertidos.append(archivo_salida_txt)
+                        
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                # Si LibreOffice no está disponible, crear un documento simple
                 try:
                     from docx import Document
                     doc = Document()
-                    
-                    # Agregar título
-                    doc.add_heading(f'Documento convertido: {file.filename}', 0)
-                    doc.add_paragraph(f'Archivo original: {file.filename}')
-                    doc.add_paragraph(f'Fecha de conversión: {pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")}')
-                    doc.add_paragraph('─' * 50)
-                    
-                    # Dividir el texto en párrafos y agregarlos al documento
-                    parrafos = texto_extraido.split('\n\n')
-                    for parrafo in parrafos:
-                        if parrafo.strip():
-                            # Limpiar el texto
-                            parrafo_limpio = parrafo.strip().replace('\n', ' ')
-                            if len(parrafo_limpio) > 0:
-                                doc.add_paragraph(parrafo_limpio)
-                    
-                    # Guardar el documento
+                    doc.add_heading(f'Conversión de: {file.filename}', 0)
+                    doc.add_paragraph('Este archivo PDF requiere conversión manual.')
+                    doc.add_paragraph('Se necesita instalar LibreOffice o herramientas de conversión PDF adicionales.')
                     doc.save(archivo_salida)
                     archivos_convertidos.append(archivo_salida)
-                    print(f"✅ Documento Word creado exitosamente: {archivo_salida}")
-                    
                 except ImportError:
-                    # Si no está disponible python-docx, crear archivo de texto
+                    # Crear archivo de texto como último recurso
                     archivo_salida_txt = archivo_salida.replace('.docx', '.txt')
                     with open(archivo_salida_txt, 'w', encoding='utf-8') as txt_file:
-                        txt_file.write(f"DOCUMENTO CONVERTIDO: {file.filename}\n")
-                        txt_file.write("=" * 50 + "\n\n")
-                        txt_file.write(texto_extraido)
-                    archivos_convertidos.append(archivo_salida_txt)
-                    print(f"✅ Archivo de texto creado: {archivo_salida_txt}")
-                    
-            else:
-                # Si no se pudo extraer texto, crear un documento informativo
-                try:
-                    from docx import Document
-                    doc = Document()
-                    doc.add_heading(f'Archivo PDF: {file.filename}', 0)
-                    doc.add_paragraph('No se pudo extraer texto de este archivo PDF.')
-                    doc.add_paragraph('Posibles causas:')
-                    doc.add_paragraph('• El PDF está protegido con contraseña')
-                    doc.add_paragraph('• El PDF contiene solo imágenes (escaneado)')
-                    doc.add_paragraph('• El archivo está corrupto')
-                    doc.add_paragraph('• Formato no compatible')
-                    doc.save(archivo_salida)
-                    archivos_convertidos.append(archivo_salida)
-                    print(f"⚠️ Documento informativo creado: {archivo_salida}")
-                    
-                except ImportError:
-                    archivo_salida_txt = archivo_salida.replace('.docx', '.txt')
-                    with open(archivo_salida_txt, 'w', encoding='utf-8') as txt_file:
-                        txt_file.write(f"ARCHIVO PDF: {file.filename}\n")
-                        txt_file.write("No se pudo extraer texto de este archivo PDF.\n")
+                        txt_file.write(f"Archivo PDF: {file.filename}\n")
+                        txt_file.write("Conversión no disponible. Se requieren dependencias adicionales.\n")
                     archivos_convertidos.append(archivo_salida_txt)
                     
         except Exception as e:
-            print(f"❌ Error general procesando {file.filename}: {str(e)}")
+            print(f"Error procesando {file.filename}: {str(e)}")
             continue
     
     if not archivos_convertidos:
         return JSONResponse(
             status_code=400,
-            content={"error": "No se pudo convertir ningún archivo PDF. Verifique que los archivos sean PDFs válidos y no estén protegidos."}
+            content={"error": "No se pudo convertir ningún archivo PDF. Verifique que los archivos sean PDFs válidos."}
         )
     
     # Crear ZIP con los archivos convertidos
