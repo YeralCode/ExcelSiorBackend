@@ -47,26 +47,38 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # Configuración de CORS
-CORS_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5176",
-    "http://localhost:5177",
-    "http://localhost:5178",
-    "http://localhost:5179",
-    "http://localhost:5180",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:5175",
-    "http://127.0.0.1:5176",
-    "http://127.0.0.1:5177",
-    "http://127.0.0.1:5178",
-    "http://127.0.0.1:5179",
-    "http://127.0.0.1:5180",
-]
+# Permite leer desde variable de entorno o usar valores por defecto
+_cors_origins_env = os.getenv("CORS_ORIGINS")
+if _cors_origins_env:
+    # Si viene como string JSON, parsearlo
+    import json
+    try:
+        CORS_ORIGINS = json.loads(_cors_origins_env)
+    except json.JSONDecodeError:
+        # Si no es JSON válido, intentar como lista separada por comas
+        CORS_ORIGINS = [origin.strip() for origin in _cors_origins_env.split(",")]
+else:
+    # Valores por defecto - incluye todos los puertos comunes de desarrollo
+    CORS_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:5176",
+        "http://localhost:5177",
+        "http://localhost:5178",
+        "http://localhost:5179",
+        "http://localhost:5180",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:5176",
+        "http://127.0.0.1:5177",
+        "http://127.0.0.1:5178",
+        "http://127.0.0.1:5179",
+        "http://127.0.0.1:5180",
+    ]
 
 # Configuración de validación
 VALIDATION_CONFIG = {
