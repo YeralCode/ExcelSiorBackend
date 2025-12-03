@@ -92,7 +92,7 @@ docker-build: ## Construir imagen Docker
 
 docker-run: ## Ejecutar aplicación en Docker
 	@echo "$(GREEN)Ejecutando aplicación en Docker...$(NC)"
-	docker run -p 8000:8000 excelsior-api
+	docker run -p 9000:8000 excelsior-api
 
 docker-stop: ## Detener contenedores Docker
 	@echo "$(GREEN)Deteniendo contenedores Docker...$(NC)"

@@ -8,6 +8,9 @@ FROM python:3.12-slim as builder
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    poppler-utils \
+    tesseract-ocr \
+    tesseract-ocr-spa \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear directorio de trabajo
@@ -26,6 +29,9 @@ FROM python:3.12-slim as production
 # Instalar dependencias del sistema necesarias para runtime
 RUN apt-get update && apt-get install -y \
     curl \
+    poppler-utils \
+    tesseract-ocr \
+    tesseract-ocr-spa \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario no-root para seguridad
